@@ -20,11 +20,11 @@ void ULightInteractableComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Try to get the objects anyway if not assigned
-	if(!PointLight || !Particles || !StaticMeshComponent)
+	if(!PointLight || !Particles || !StaticMeshComponent || !WidgetComponent)
 	{
 		const USceneComponent* RootComponent = GetOwner()->GetRootComponent();
-		TArray<USceneComponent*> Components;
 		
+		TArray<USceneComponent*> Components;		
 		RootComponent->GetChildrenComponents(false, Components);
 
 		for(const auto Child : Components)
@@ -68,22 +68,18 @@ void ULightInteractableComponent::BeginPlay()
 		if(const auto OverheadWidgetChild = Cast<UOverheadWidget>(WidgetComponent->GetWidget()))
 		{
 			OverheadWidget = OverheadWidgetChild;
+		}		
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Couldn't retrieve overhead widget"));
 		}
 	}
 
 	OnComponentBeginOverlap.AddDynamic(this, &ULightInteractableComponent::OnBeginOverlap);
 	OnComponentEndOverlap.AddDynamic(this, &ULightInteractableComponent::OnEndOverlap);
 
-	Lit = DefaultLitStatus;
-	if(PointLight)
-	{
-		PointLight->SetVisibility(DefaultLitStatus, false);
-	}
-	
-	if(Particles)
-	{
-		Particles->SetVisibility(DefaultLitStatus, false);
-	}
+	bIsLit = bDefaultLitStatus;
+	SetInteractableVisibility();
 }
 
 void ULightInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -104,11 +100,8 @@ void ULightInteractableComponent::OnBeginOverlap(UPrimitiveComponent* Overlapped
 		{
 			StaticMeshComponent->SetRenderCustomDepth(true);
 		}
-
-		if(OverheadWidget)
-		{
-			OverheadWidget->SetDisplayText(Lit ? TEXT("Press E to Extinguish") : TEXT("Press E to Light"));
-		}
+		
+		SetOverheadWidgetText(bIsLit ? FString{TEXT("Press E to Extinguish")} : FString{TEXT("Press E to Light")});
 	}	
 }
 
@@ -124,31 +117,50 @@ void ULightInteractableComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCo
 			StaticMeshComponent->SetRenderCustomDepth(false);
 		}
 
-		if(OverheadWidget)
-		{
-			OverheadWidget->SetDisplayText(TEXT(""));
-		}
+		SetOverheadWidgetText(FString{TEXT("")});
 	}
 }
 
-void ULightInteractableComponent::Interact()
+bool ULightInteractableComponent::Interact()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Interaction succeeded"));
+	bIsLit = !bIsLit;
 
-	Lit = !Lit;
+	SetInteractableVisibility();
+	SetOverheadWidgetText(bIsLit ? FString{TEXT("Press E to Extinguish")} : FString{TEXT("Press E to Light")});
+	OnChange.Broadcast(this, bIsLit);
+	
+	return bIsLit;
+}
 
+void ULightInteractableComponent::SetInteractableVisibility() const
+{
 	if(PointLight)
 	{
-		PointLight->SetVisibility(Lit, false);
+		PointLight->SetVisibility(bIsLit, false);
 	}
 	
 	if(Particles)
 	{
-		Particles->SetVisibility(Lit, false);
+		Particles->SetVisibility(bIsLit, false);
+	}
+}
+
+void ULightInteractableComponent::SetOverheadWidgetText(const FString& InText)
+{
+	if(!OverheadWidget && WidgetComponent)
+	{
+		if(const auto OverheadWidgetChild = Cast<UOverheadWidget>(WidgetComponent->GetWidget()))
+		{
+			OverheadWidget = OverheadWidgetChild;
+		}
 	}
 
 	if(OverheadWidget)
+    {
+    	OverheadWidget->SetDisplayText(InText);
+    }
+	else
 	{
-		OverheadWidget->SetDisplayText(Lit ? TEXT("Press E to Extinguish") : TEXT("Press E to Light"));
+		UE_LOG(LogTemp, Warning, TEXT("No Overhead widget"));
 	}
 }
