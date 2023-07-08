@@ -1,2 +1,2 @@
 # DMGameJam2023-1
--1 in case there's more than one per year
+DruidMechanics Game Jam. -1 in case there's more than one per year
