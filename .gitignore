@@ -1,3 +1,13 @@
+# Rider
+Plugins/Developer/RiderLink
+.idea
+
+# Temp
+
+Content/MedievalDungeon
+Content/StarterContent
+Content/__ExternalActors__
+Content/Characters
 # Visual Studio 2015 user specific files
 .vs/
 
