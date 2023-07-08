@@ -6,6 +6,8 @@
 #include "Components/BoxComponent.h"
 #include "LightInteractableComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInteractableChange, ULightInteractableComponent*, Context, bool, bWasLit);
+
 class UOverheadWidget;
 class UWidgetComponent;
 class UPointLightComponent;
@@ -33,14 +35,22 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
-	void Interact();
+	bool Interact();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE float GetLuminanceValue() const { return LuminanceValue; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FORCEINLINE bool IsLit() const { return bIsLit; }
+
+	FInteractableChange OnChange;
 
 private:
 	UPROPERTY(EditAnywhere)
-	bool DefaultLitStatus = false;
+	bool bDefaultLitStatus = false;
 
 	UPROPERTY(VisibleAnywhere)
-	bool Lit = false;
+	bool bIsLit = false;
 	
 	UPROPERTY(EditAnywhere)
 	UPointLightComponent* PointLight;
@@ -55,5 +65,11 @@ private:
 	UWidgetComponent* WidgetComponent;
 
 	UPROPERTY()
-	UOverheadWidget* OverheadWidget; 
+	UOverheadWidget* OverheadWidget;
+
+	UPROPERTY(EditAnywhere)
+	float LuminanceValue = 0.2f;
+
+	void SetInteractableVisibility() const;
+	void SetOverheadWidgetText(const FString& InText);
 };

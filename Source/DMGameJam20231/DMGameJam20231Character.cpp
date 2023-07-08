@@ -10,8 +10,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "LightInteractableComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "Debug/DebugDrawComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,7 +64,7 @@ void ADMGameJam20231Character::BeginPlay()
 	Super::BeginPlay();
 
 	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -78,8 +76,6 @@ void ADMGameJam20231Character::BeginPlay()
 void ADMGameJam20231Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);	
-
-	UE_LOG(LogTemp, Warning, TEXT("Rotation Rate: %f"), (RotationToAdd.Yaw * DeltaSeconds * RotationRate));
 	
 	CameraBoom->AddRelativeRotation(FRotator(0.0f, RotationToAdd.Yaw * DeltaSeconds * RotationRate, 0.0f));
 	RotationToAdd = FRotator::ZeroRotator;
@@ -145,7 +141,20 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 {
 	if(CurrentInteractable)
 	{
-		CurrentInteractable->Interact();
+		const bool bLit = CurrentInteractable->IsLit();
+
+		if(!bLit && CurrentInteractable->GetLuminanceValue() < CurrentLuminance)
+		{
+			CurrentInteractable->Interact();
+			CurrentLuminance -= CurrentInteractable->GetLuminanceValue();
+		}
+		else if(bLit)
+		{
+			CurrentInteractable->Interact();
+			CurrentLuminance += CurrentInteractable->GetLuminanceValue();
+		}		
+
+		UE_LOG(LogTemp, Warning, TEXT("Luminance: %f"), CurrentLuminance);
 	}
 }
 
