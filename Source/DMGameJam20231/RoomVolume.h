@@ -21,6 +21,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
 	
 	UFUNCTION()
 	void InteractableChanged(ULightInteractableComponent* Context, bool bWasLit);
@@ -35,6 +37,9 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* BoxComponent;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 
 	TArray<ULightInteractableComponent*> InteractableComponentsInVolume;
 

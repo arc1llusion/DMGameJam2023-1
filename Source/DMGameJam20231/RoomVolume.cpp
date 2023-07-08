@@ -5,6 +5,7 @@
 
 #include "LightInteractableComponent.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ARoomVolume::ARoomVolume()
@@ -20,13 +21,18 @@ ARoomVolume::ARoomVolume()
 void ARoomVolume::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	TArray<AActor*> ActorsToIgnore;
 
 	TArray<UPrimitiveComponent*> Components;
-	GetOverlappingComponents(Components);
+	
+	UKismetSystemLibrary::ComponentOverlapComponents(BoxComponent, BoxComponent->GetComponentTransform(), ObjectTypes, ULightInteractableComponent::StaticClass(), ActorsToIgnore, Components);
+	
+	// GetOverlappingComponents(Components);
 
 	for(const auto OverlappedComponent : Components)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlapped Component: %s"), *OverlappedComponent->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Overlapped Component: %s, On %s"), *OverlappedComponent->GetName(), *OverlappedComponent->GetOwner()->GetActorNameOrLabel());
 		if(const auto InteractableComponent = Cast<ULightInteractableComponent>(OverlappedComponent))
 		{
 			InteractableComponentsInVolume.Add(InteractableComponent);
@@ -36,6 +42,11 @@ void ARoomVolume::BeginPlay()
 	}
 
 	CalculateLuminanceRatio();
+}
+
+void ARoomVolume::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();	
 }
 
 void ARoomVolume::InteractableChanged(ULightInteractableComponent* Context, bool bWasLit)
@@ -63,7 +74,7 @@ void ARoomVolume::CalculateLuminanceRatio()
 		TotalLuminance += InteractableComponent->GetLuminanceValue();
 	}
 
-	LuminanceRatio = ActivatedLuminance <= 0.0f ? 0.0f : (ActivatedLuminance / TotalLuminance);
+	LuminanceRatio = TotalLuminance <= 0.0f ? 0.0f : (ActivatedLuminance / TotalLuminance);
 
 	UE_LOG(LogTemp, Warning, TEXT("Room Luminance Ratio: %f"), LuminanceRatio);
 }
