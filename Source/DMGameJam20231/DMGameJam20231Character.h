@@ -8,6 +8,7 @@
 #include "DMGameJam20231Character.generated.h"
 
 
+class UPointLightComponent;
 class ULightInteractableComponent;
 class UInputMappingContext;
 class UInputAction;
@@ -26,6 +27,9 @@ class ADMGameJam20231Character : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Light, meta = (AllowPrivateAccess = "true"))
+	UPointLightComponent* SpriteLight;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -84,6 +88,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float MaxInteractRadius = 100.0f;
+
+	float MaxPointLightIntensity = 0.0f;
 
 	FRotator RotationToAdd;
 

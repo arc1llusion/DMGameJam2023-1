@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "LightInteractableComponent.h"
+#include "Components/PointLightComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,12 +51,16 @@ ADMGameJam20231Character::ADMGameJam20231Character()
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; 
+	FollowCamera->bUsePawnControlRotation = false;
+
+	SpriteLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("SpriteLight"));
+	SpriteLight->SetupAttachment(RootComponent);
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	CurrentLuminance = MaxLuminance;
+	MaxPointLightIntensity = SpriteLight->Intensity;
 }
 
 void ADMGameJam20231Character::BeginPlay()
@@ -152,7 +157,12 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 		{
 			CurrentInteractable->Interact();
 			CurrentLuminance += CurrentInteractable->GetLuminanceValue();
-		}		
+		}
+
+		if(SpriteLight)
+		{
+			SpriteLight->SetIntensity(MaxPointLightIntensity * CurrentLuminance);
+		}
 
 		UE_LOG(LogTemp, Warning, TEXT("Luminance: %f"), CurrentLuminance);
 	}
