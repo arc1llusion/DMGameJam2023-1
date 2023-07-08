@@ -148,7 +148,7 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 	{
 		const bool bLit = CurrentInteractable->IsLit();
 
-		if(!bLit && CurrentInteractable->GetLuminanceValue() < CurrentLuminance)
+		if(!bLit && CurrentInteractable->GetLuminanceValue() <= CurrentLuminance)
 		{
 			CurrentInteractable->Interact();
 			CurrentLuminance -= CurrentInteractable->GetLuminanceValue();
@@ -157,11 +157,18 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 		{
 			CurrentInteractable->Interact();
 			CurrentLuminance += CurrentInteractable->GetLuminanceValue();
+
+			OnLuminanceAdded.Broadcast();
 		}
 
 		if(SpriteLight)
 		{
 			SpriteLight->SetIntensity(MaxPointLightIntensity * CurrentLuminance);
+		}
+
+		if(CurrentLuminance <= SMALL_NUMBER)
+		{
+			OnLuminanceEmpty.Broadcast();
 		}
 
 		UE_LOG(LogTemp, Warning, TEXT("Luminance: %f"), CurrentLuminance);

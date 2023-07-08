@@ -7,6 +7,9 @@
 #include "InputActionValue.h"
 #include "DMGameJam20231Character.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLuminanceEmpty);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLuminanceAdded);
+
 
 class UPointLightComponent;
 class ULightInteractableComponent;
@@ -70,11 +73,14 @@ protected:
 public:
 	virtual void Tick(float DeltaSeconds) override;
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	void SetLightInteractable(ULightInteractableComponent* InLightInteractable);
+
+	FLuminanceEmpty OnLuminanceEmpty;
+	FLuminanceAdded OnLuminanceAdded;
 	
 private:
 	UPROPERTY(EditAnywhere, Category = "Luminance")

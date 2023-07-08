@@ -63,18 +63,6 @@ void ULightInteractableComponent::BeginPlay()
 		}
 	}
 
-	if(WidgetComponent)
-	{
-		if(const auto OverheadWidgetChild = Cast<UOverheadWidget>(WidgetComponent->GetWidget()))
-		{
-			OverheadWidget = OverheadWidgetChild;
-		}		
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Couldn't retrieve overhead widget"));
-		}
-	}
-
 	OnComponentBeginOverlap.AddDynamic(this, &ULightInteractableComponent::OnBeginOverlap);
 	OnComponentEndOverlap.AddDynamic(this, &ULightInteractableComponent::OnEndOverlap);
 
