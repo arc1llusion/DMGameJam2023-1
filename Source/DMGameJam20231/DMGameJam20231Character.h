@@ -48,6 +48,12 @@ class ADMGameJam20231Character : public ACharacter
 
 public:
 	ADMGameJam20231Character();
+
+	UFUNCTION(BlueprintCallable, Category = "Luminance")
+	float GetMaxLuminance() const { return MaxLuminance; }
+
+	UFUNCTION(BlueprintCallable, Category = "Luminance")
+	float GetCurrentLuminance() const { return CurrentLuminance; }
 	
 
 protected:
