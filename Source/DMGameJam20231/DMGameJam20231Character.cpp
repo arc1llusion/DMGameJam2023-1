@@ -9,6 +9,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "LightInteractableComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Debug/DebugDrawComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -16,7 +19,6 @@
 
 ADMGameJam20231Character::ADMGameJam20231Character()
 {
-	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
@@ -27,28 +29,35 @@ ADMGameJam20231Character::ADMGameJam20231Character()
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->bConstrainToPlane = true;
+	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 700.f;
-	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
+	//RootComponent->SetRelativeRotation(FRotator(-60.0f, 0.0f, 0.0f));
+	
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
+	CameraBoom->TargetArmLength = 800.f;
+	CameraBoom->SetUsingAbsoluteRotation(true);
+	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
+	CameraBoom->bDoCollisionTest = false;
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera->bUsePawnControlRotation = false; 
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	CurrentLuminance = MaxLuminance;
 }
 
 void ADMGameJam20231Character::BeginPlay()
@@ -66,37 +75,51 @@ void ADMGameJam20231Character::BeginPlay()
 	}
 }
 
+void ADMGameJam20231Character::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);	
+
+	UE_LOG(LogTemp, Warning, TEXT("Rotation Rate: %f"), (RotationToAdd.Yaw * DeltaSeconds * RotationRate));
+	
+	CameraBoom->AddRelativeRotation(FRotator(0.0f, RotationToAdd.Yaw * DeltaSeconds * RotationRate, 0.0f));
+	RotationToAdd = FRotator::ZeroRotator;
+}
+
+void ADMGameJam20231Character::SetLightInteractable(ULightInteractableComponent* InLightInteractable)
+{
+	CurrentInteractable = InLightInteractable;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
+
 
 void ADMGameJam20231Character::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		//Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
+	{
 
 		//Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADMGameJam20231Character::Move);
+		EnhancedInputComponent->BindAction(MoveActionAsset, ETriggerEvent::Triggered, this, &ADMGameJam20231Character::MoveAction);
 
 		//Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADMGameJam20231Character::Look);
+		EnhancedInputComponent->BindAction(LookActionAsset, ETriggerEvent::Triggered, this, &ADMGameJam20231Character::LookAction);
 
+		//Interact
+		EnhancedInputComponent->BindAction(InteractActionAsset, ETriggerEvent::Started, this, &ADMGameJam20231Character::InteractAction);
 	}
-
 }
 
-void ADMGameJam20231Character::Move(const FInputActionValue& Value)
+void ADMGameJam20231Character::MoveAction(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator Rotation = CameraBoom->GetRelativeRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
@@ -111,19 +134,20 @@ void ADMGameJam20231Character::Move(const FInputActionValue& Value)
 	}
 }
 
-void ADMGameJam20231Character::Look(const FInputActionValue& Value)
+void ADMGameJam20231Character::LookAction(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
+	const FVector2D LookAxisVector = Value.Get<FVector2D>();
+	RotationToAdd += FRotator(0.0f, LookAxisVector.X, 0.0f);
 }
 
+void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
+{
+	if(CurrentInteractable)
+	{
+		CurrentInteractable->Interact();
+	}
+}
 
 
 

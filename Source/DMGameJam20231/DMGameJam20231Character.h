@@ -8,6 +8,12 @@
 #include "DMGameJam20231Character.generated.h"
 
 
+class ULightInteractableComponent;
+class UInputMappingContext;
+class UInputAction;
+class USpringArmComponent;
+class UCameraComponent;
+
 UCLASS(config=Game)
 class ADMGameJam20231Character : public ACharacter
 {
@@ -15,27 +21,26 @@ class ADMGameJam20231Character : public ACharacter
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
-
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* JumpAction;
+	UInputMappingContext* DefaultMappingContext;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
+	UInputAction* MoveActionAsset;
 
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
+	UInputAction* LookActionAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractActionAsset;
 
 public:
 	ADMGameJam20231Character();
@@ -44,23 +49,48 @@ public:
 protected:
 
 	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+	void MoveAction(const FInputActionValue& Value);
 
 	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
-			
+	void LookAction(const FInputActionValue& Value);
 
+	void InteractAction(const FInputActionValue& Value);
+	
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 	// To add mapping context
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 public:
+	virtual void Tick(float DeltaSeconds) override;
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	void SetLightInteractable(ULightInteractableComponent* InLightInteractable);
+	
+private:
+	UPROPERTY(EditAnywhere, Category = "Luminance")
+	float MaxLuminance = 1.0f;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Luminance")
+	float CurrentLuminance;
+
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	float MaxInteractDistance = 400.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Interaction")
+	float MaxInteractRadius = 100.0f;
+
+	FRotator RotationToAdd;
+
+	UPROPERTY(EditAnywhere)
+	float RotationRate = 500.0f;
+
+	UPROPERTY()
+	ULightInteractableComponent* CurrentInteractable;
 };
 
