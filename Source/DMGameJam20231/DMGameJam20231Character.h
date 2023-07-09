@@ -12,6 +12,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLuminanceAdded);
 
 
 class UPointLightComponent;
+class UParticleSystemComponent;
+class UNiagaraComponent;
 class ULightInteractableComponent;
 class UInputMappingContext;
 class UInputAction;
@@ -76,6 +78,8 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay() override;
 
+	virtual void PostInitializeComponents() override;
+
 public:
 	virtual void Tick(float DeltaSeconds) override;
 	/** Returns CameraBoom subobject **/
@@ -102,6 +106,12 @@ private:
 	float MaxInteractRadius = 100.0f;
 
 	float MaxPointLightIntensity = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float MaxNiagaraSpawnRate = 1500.0f;
+
+	UPROPERTY(EditAnywhere)
+	UNiagaraComponent* SpriteParticles;
 
 	FRotator RotationToAdd;
 

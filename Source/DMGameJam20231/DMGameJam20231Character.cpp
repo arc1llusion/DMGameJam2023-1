@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -11,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "LightInteractableComponent.h"
 #include "Components/PointLightComponent.h"
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -76,6 +78,13 @@ void ADMGameJam20231Character::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+}
+
+void ADMGameJam20231Character::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	SpriteParticles = FindComponentByClass<UNiagaraComponent>();
 }
 
 void ADMGameJam20231Character::Tick(float DeltaSeconds)
@@ -169,6 +178,11 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 		if(CurrentLuminance <= SMALL_NUMBER)
 		{
 			OnLuminanceEmpty.Broadcast();
+		}
+
+		if(SpriteParticles)
+		{
+			SpriteParticles->SetNiagaraVariableFloat("SpawnRate", MaxNiagaraSpawnRate * CurrentLuminance);
 		}
 
 		UE_LOG(LogTemp, Warning, TEXT("Luminance: %f"), CurrentLuminance);
