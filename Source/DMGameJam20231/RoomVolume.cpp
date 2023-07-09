@@ -4,6 +4,7 @@
 #include "RoomVolume.h"
 
 #include "LightInteractableComponent.h"
+#include "TriggerObstacle.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -74,8 +75,24 @@ void ARoomVolume::CalculateLuminanceRatio()
 		TotalLuminance += InteractableComponent->GetLuminanceValue();
 	}
 
+	const float PreviousRatio = LuminanceRatio;
 	LuminanceRatio = TotalLuminance <= 0.0f ? 0.0f : (ActivatedLuminance / TotalLuminance);
 
+	if(PreviousRatio < TriggerRatioThreshold && LuminanceRatio >= TriggerRatioThreshold)
+	{
+		for(const auto Obstacle : Obstacles)
+		{
+			Obstacle->Interact();
+		}
+	}
+	else if(PreviousRatio > TriggerRatioThreshold && LuminanceRatio <= TriggerRatioThreshold)
+	{
+		for(const auto Obstacle : Obstacles)
+		{
+			Obstacle->Interact();
+		}
+	}
+	
 	UE_LOG(LogTemp, Warning, TEXT("Room Luminance Ratio: %f"), LuminanceRatio);
 }
 

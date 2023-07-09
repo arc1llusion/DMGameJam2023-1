@@ -16,7 +16,7 @@ void UFadeWidget::Tick(float DeltaTime)
 
 		UpdateFadeImageAlpha();
 
-		if(Alpha + SMALL_NUMBER >= 1.0f)
+		if(Alpha + UE_KINDA_SMALL_NUMBER >= 1.0f)
 		{
 			OnFadeEnd.Broadcast(false);
 			bIsFading = false;
