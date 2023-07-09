@@ -50,7 +50,6 @@ void ADMGameJam20231GameMode::Tick(float DeltaSeconds)
 
 	if(FadeWidget)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Game Mode Tick"));
 		FadeWidget->Tick(DeltaSeconds);
 	}
 }
