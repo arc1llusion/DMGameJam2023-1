@@ -168,13 +168,13 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 
 		if(!bLit && CurrentInteractable->GetLuminanceValue() <= CurrentLuminance)
 		{
-			CurrentInteractable->Interact();
 			CurrentLuminance -= CurrentInteractable->GetLuminanceValue();
+			CurrentInteractable->Interact(this);
 		}
 		else if(bLit)
 		{
-			CurrentInteractable->Interact();
 			CurrentLuminance += CurrentInteractable->GetLuminanceValue();
+			CurrentInteractable->Interact(this);
 
 			OnLuminanceAdded.Broadcast();
 		}

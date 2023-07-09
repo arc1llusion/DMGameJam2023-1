@@ -88,8 +88,15 @@ void ULightInteractableComponent::OnBeginOverlap(UPrimitiveComponent* Overlapped
 		{
 			StaticMeshComponent->SetRenderCustomDepth(true);
 		}
-		
-		SetOverheadWidgetText(bIsLit ? FString{TEXT("Press E to Extinguish")} : FString{TEXT("Press E to Light")});
+
+		if(!bIsLit && Character->GetCurrentLuminance() < LuminanceValue)
+		{
+			SetOverheadWidgetText("Not enough light left!");
+		}
+		else
+		{
+			SetOverheadWidgetText(bIsLit ? FString{TEXT("Press E to Extinguish")} : FString{TEXT("Press E to Light")});			
+		}		
 	}	
 }
 
@@ -109,12 +116,21 @@ void ULightInteractableComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCo
 	}
 }
 
-bool ULightInteractableComponent::Interact()
+bool ULightInteractableComponent::Interact(ADMGameJam20231Character* Character)
 {
 	bIsLit = !bIsLit;
 
 	SetInteractableVisibility();
-	SetOverheadWidgetText(bIsLit ? FString{TEXT("Press E to Extinguish")} : FString{TEXT("Press E to Light")});
+	
+	if(!bIsLit && Character && Character->GetCurrentLuminance() < LuminanceValue)
+	{
+		SetOverheadWidgetText("Not enough light left!");
+	}
+	else
+	{
+		SetOverheadWidgetText(bIsLit ? FString{TEXT("Press E to Extinguish")} : FString{TEXT("Press E to Light")});			
+	}
+	
 	OnChange.Broadcast(this, bIsLit);
 	
 	return bIsLit;

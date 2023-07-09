@@ -11,6 +11,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInteractableChange, ULightInteract
 class UOverheadWidget;
 class UWidgetComponent;
 class UPointLightComponent;
+class ADMGameJam20231Character;
+
 /**
  * 
  */
@@ -35,7 +37,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
-	bool Interact();
+	bool Interact(ADMGameJam20231Character* Character);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FORCEINLINE float GetLuminanceValue() const { return LuminanceValue; }
