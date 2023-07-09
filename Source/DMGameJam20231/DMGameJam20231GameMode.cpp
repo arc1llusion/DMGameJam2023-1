@@ -24,23 +24,37 @@ void ADMGameJam20231GameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	UE_LOG(LogTemp, Warning, TEXT("Initialize Game Mode"));
+	
 	Character = Cast<ADMGameJam20231Character>(UGameplayStatics::GetPlayerCharacter(this, 0));
 
 	if(Character)
 	{
 		Character->OnLuminanceEmpty.AddDynamic(this, &ADMGameJam20231GameMode::OnCharacterLuminanceEmpty);
 		Character->OnLuminanceAdded.AddDynamic(this, &ADMGameJam20231GameMode::OnCharacterLuminanceAdded);
-	}	
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Character not found"));
+	}
 
 	if(FadeWidgetClass)
 	{
 		FadeWidget = Cast<UFadeWidget>(CreateWidget(GetWorld(), FadeWidgetClass, TEXT("FadeWidget") ));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Fade Widget class Missing"));
 	}
 
 	if(FadeWidget)
 	{
 		FadeWidget->AddToViewport();
 		FadeWidget->OnFadeEnd.AddDynamic(this, &ADMGameJam20231GameMode::OnFadeEnd);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Fade Widget not created"));
 	}
 }
 
@@ -50,7 +64,6 @@ void ADMGameJam20231GameMode::Tick(float DeltaSeconds)
 
 	if(FadeWidget)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Game Mode Tick"));
 		FadeWidget->Tick(DeltaSeconds);
 	}
 }
@@ -65,8 +78,10 @@ void ADMGameJam20231GameMode::OnCharacterLuminanceAdded()
 
 void ADMGameJam20231GameMode::OnCharacterLuminanceEmpty()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Trigger Fade"));
 	if(FadeWidget)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Fade found"));
 		FadeWidget->TriggerFade();
 	}
 }

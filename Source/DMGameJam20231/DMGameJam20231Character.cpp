@@ -184,7 +184,8 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 			SpriteLight->SetIntensity(MaxPointLightIntensity * CurrentLuminance);
 		}
 
-		if(CurrentLuminance <= SMALL_NUMBER)
+		UE_LOG(LogTemp, Warning, TEXT("Luminance %f"), CurrentLuminance);
+		if(CurrentLuminance <= UE_KINDA_SMALL_NUMBER)
 		{
 			OnLuminanceEmpty.Broadcast();
 		}
