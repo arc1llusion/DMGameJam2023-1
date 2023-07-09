@@ -12,7 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "LightInteractableComponent.h"
 #include "Components/PointLightComponent.h"
-
+#include "Kismet/KismetMathLibrary.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,6 +62,7 @@ ADMGameJam20231Character::ADMGameJam20231Character()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	CurrentLuminance = MaxLuminance;
+	LerpCurrentLuminance = CurrentLuminance;
 	MaxPointLightIntensity = SpriteLight->Intensity;
 }
 
@@ -93,6 +94,14 @@ void ADMGameJam20231Character::Tick(float DeltaSeconds)
 	
 	CameraBoom->AddRelativeRotation(FRotator(0.0f, RotationToAdd.Yaw * DeltaSeconds * RotationRate, 0.0f));
 	RotationToAdd = FRotator::ZeroRotator;
+
+	LerpCurrentLuminance = UKismetMathLibrary::FInterpTo(LerpCurrentLuminance, CurrentLuminance, DeltaSeconds, 2.0f);
+
+	if(SpriteParticles && FMath::Abs(CurrentLuminance - LerpCurrentLuminance ) > SMALL_NUMBER)
+	{
+		SpriteParticles->SetNiagaraVariableFloat("SpawnRate", MaxNiagaraSpawnRate * LerpCurrentLuminance);
+		SpriteParticles->SetNiagaraVariableFloat("SpawnRadius", 1 - LerpCurrentLuminance);
+	}
 }
 
 void ADMGameJam20231Character::SetLightInteractable(ULightInteractableComponent* InLightInteractable)
@@ -179,13 +188,6 @@ void ADMGameJam20231Character::InteractAction(const FInputActionValue& Value)
 		{
 			OnLuminanceEmpty.Broadcast();
 		}
-
-		if(SpriteParticles)
-		{
-			SpriteParticles->SetNiagaraVariableFloat("SpawnRate", MaxNiagaraSpawnRate * CurrentLuminance);
-		}
-
-		UE_LOG(LogTemp, Warning, TEXT("Luminance: %f"), CurrentLuminance);
 	}
 }
 

@@ -99,6 +99,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Luminance")
 	float CurrentLuminance;
 
+	UPROPERTY(VisibleAnywhere, Category = "Luminance")
+	float LerpCurrentLuminance;
+
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	float MaxInteractDistance = 400.0f;
 
