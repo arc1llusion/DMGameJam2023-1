@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "RoomVolume.generated.h"
 
+class ATriggerObstacle;
 class ULightInteractableComponent;
 class UBoxComponent;
 
@@ -40,6 +41,12 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+
+	UPROPERTY(EditAnywhere)
+	float TriggerRatioThreshold = 0.5f;
+
+	UPROPERTY(EditAnywhere)
+	TArray<ATriggerObstacle*> Obstacles;
 
 	TArray<ULightInteractableComponent*> InteractableComponentsInVolume;
 

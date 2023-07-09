@@ -24,8 +24,6 @@ void ADMGameJam20231GameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UE_LOG(LogTemp, Warning, TEXT("Initialize Game Mode"));
-	
 	Character = Cast<ADMGameJam20231Character>(UGameplayStatics::GetPlayerCharacter(this, 0));
 
 	if(Character)
@@ -78,18 +76,13 @@ void ADMGameJam20231GameMode::OnCharacterLuminanceAdded()
 
 void ADMGameJam20231GameMode::OnCharacterLuminanceEmpty()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Trigger Fade"));
 	if(FadeWidget)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Fade found"));
 		FadeWidget->TriggerFade();
 	}
 }
 
 void ADMGameJam20231GameMode::OnFadeEnd(bool bIsReset)
 {
-	if(bIsReset)
-	{
-		FadeWidget->RemoveFromParent();
-	}
+	UGameplayStatics::OpenLevel(GetWorld(), LevelToLoadOnLose);
 }

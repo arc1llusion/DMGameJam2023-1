@@ -42,6 +42,9 @@ private:
 
 	UPROPERTY()
 	UFadeWidget* FadeWidget;
+
+	UPROPERTY(EditAnywhere)
+	FName LevelToLoadOnLose{TEXT("M_Level_01")};
 };
 
 
