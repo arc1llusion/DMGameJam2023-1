@@ -42,11 +42,11 @@ void UGrim::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentT
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	if(Sounds && Sounds->AttenuationSettings)
-	{		
-		DrawDebugSphere(GetWorld(), GetOwner()->GetActorLocation(), Sounds->AttenuationSettings->Attenuation.AttenuationShapeExtents.X, 12, FColor::Red);
-		DrawDebugSphere(GetWorld(), GetOwner()->GetActorLocation(), Sounds->AttenuationSettings->Attenuation.FalloffDistance, 12, FColor::Blue);
-	}
+	// if(Sounds && Sounds->AttenuationSettings)
+	// {		
+	// 	DrawDebugSphere(GetWorld(), GetOwner()->GetActorLocation(), Sounds->AttenuationSettings->Attenuation.AttenuationShapeExtents.X, 12, FColor::Red);
+	// 	DrawDebugSphere(GetWorld(), GetOwner()->GetActorLocation(), Sounds->AttenuationSettings->Attenuation.FalloffDistance, 12, FColor::Blue);
+	// }
 }
 
 void UGrim::PlaySound()
