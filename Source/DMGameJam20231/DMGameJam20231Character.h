@@ -103,15 +103,15 @@ private:
 	float LerpCurrentLuminance;
 
 	UPROPERTY(EditAnywhere, Category = "Interaction")
-	float MaxInteractDistance = 400.0f;
+	float MaxInteractDistance = 600.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Interaction")
-	float MaxInteractRadius = 100.0f;
+	float MaxInteractRadius = 200.0f;
 
 	float MaxPointLightIntensity = 0.0f;
 
 	UPROPERTY(EditAnywhere)
-	float MaxNiagaraSpawnRate = 1500.0f;
+	float MaxNiagaraSpawnRate = 2000.0f;
 
 	UPROPERTY(EditAnywhere)
 	UNiagaraComponent* SpriteParticles;
